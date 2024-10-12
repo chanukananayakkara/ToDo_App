@@ -28,4 +28,11 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         app:srcCompat="@drawable/baseline_edit_24" />
+
+    <ImageView
+        android:id="@+id/ivNotify"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        app:srcCompat="@drawable/baseline_notifications_24" />
 </LinearLayout>

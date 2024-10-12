@@ -52,11 +52,11 @@ class NotificationsActivity : AppCompatActivity() {
 
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val time = getTime()
-        //alarmManager.setExactAndAllowWhileIdle(
-            //AlarmManager.RTC_WAKEUP,
-            //time,
-            //pendingIntent
-        //)
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            time,
+            pendingIntent
+        )
         showAlert(time, title, message)
     }
 
