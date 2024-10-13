@@ -32,6 +32,10 @@ class NotificationsActivity : AppCompatActivity() {
         binding = ActivityNotificationsBinding.inflate(layoutInflater)
         //enableEdgeToEdge()
         setContentView(binding.root)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 0)
+        }
 //        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
 //            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
 //            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -116,14 +120,15 @@ class NotificationsActivity : AppCompatActivity() {
         return calendar.timeInMillis
     }
 
-    private fun createNotificationChannel()
-    {
-        val name = "Notif Channel"
-        val desc = "A Description of the Channel"
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
-        val channel = NotificationChannel(channelID, name, importance)
-        channel.description = desc
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(channel)
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // Only for Oreo and higher
+            val name = "Notif Channel"
+            val desc = "A Description of the Channel"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(channelID, name, importance)
+            channel.description = desc
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
+        }
     }
 }
