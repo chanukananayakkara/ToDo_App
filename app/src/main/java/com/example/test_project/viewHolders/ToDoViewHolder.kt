@@ -11,13 +11,13 @@ class ToDoViewHolder(view:View):RecyclerView.ViewHolder(view) {
     val cbTodo:CheckBox
     val ivDelete:ImageView
     val ivEdit:ImageView
-    val ivNotify:ImageView
+
 
     init {
         cbTodo = view.findViewById(R.id.cbTodo)
         ivDelete = view.findViewById(R.id.ivDelete)
         ivEdit = view.findViewById(R.id.ivEdit)
-        ivNotify= view.findViewById(R.id.ivNotify)
+
 
     }
 }
