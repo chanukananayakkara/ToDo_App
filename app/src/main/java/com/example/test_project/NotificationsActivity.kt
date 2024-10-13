@@ -124,7 +124,7 @@ class NotificationsActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // Only for Oreo and higher
             val name = "Notif Channel"
             val desc = "A Description of the Channel"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(channelID, name, importance)
             channel.description = desc
             val notificationManager = getSystemService(NotificationManager::class.java)
