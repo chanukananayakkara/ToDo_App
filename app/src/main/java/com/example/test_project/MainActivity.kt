@@ -62,6 +62,12 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        val btnNotify: Button = findViewById(R.id.btnNotify)
+        btnNotify.setOnClickListener {
+            val intent = Intent(this,NotificationsActivity::class.java)
+            startActivity(intent)
+        }
+
 
 
 

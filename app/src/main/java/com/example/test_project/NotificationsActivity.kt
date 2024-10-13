@@ -1,5 +1,6 @@
 package com.example.test_project
 
+
 import android.app.AlarmManager
 import android.app.AlertDialog
 import android.app.NotificationChannel
@@ -8,6 +9,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.icu.util.Calendar
+import android.os.Build
 import android.os.Bundle
 import android.text.format.DateFormat
 import androidx.activity.enableEdgeToEdge
@@ -16,6 +18,10 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.test_project.databinding.ActivityNotificationsBinding
 import java.util.Date
+import android.provider.Settings
+import android.net.Uri
+
+
 
 class NotificationsActivity : AppCompatActivity() {
 
@@ -33,8 +39,23 @@ class NotificationsActivity : AppCompatActivity() {
 //        }
 
         createNotificationChannel()
-        binding.submitButton.setOnClickListener { scheduleNotification() }
+        binding.submitButton.setOnClickListener {
+
+            requestExactAlarmPermission(this) // Request the permission before scheduling the alarm
+
+            scheduleNotification() }
     }
+
+    private fun requestExactAlarmPermission(context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12 and higher
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            if (!alarmManager.canScheduleExactAlarms()) {
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                context.startActivity(intent)
+            }
+        }
+    }
+
 
     private fun scheduleNotification() {
         val intent = Intent(applicationContext, Notification::class.java)
@@ -78,6 +99,8 @@ class NotificationsActivity : AppCompatActivity() {
 
 
     }
+
+
 
 
     private fun getTime(): Long
