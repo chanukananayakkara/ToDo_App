@@ -2,15 +2,11 @@ package com.example.test_project
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.InputType
 import android.widget.Button
 import android.widget.EditText
-import androidx.activity.enableEdgeToEdge
+import android.widget.SearchView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -23,37 +19,49 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var adapter: TodoAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
         val viewModel = ViewModelProvider(this)[MainActivityData::class.java]
         val repository = TodoRepository(TodoDatabase.getInstance(this))
+        val rvTodoList: RecyclerView = findViewById(R.id.rvTodoList)
 
-
-
-
-        val rvTodoList:RecyclerView = findViewById(R.id.rvTodoList)
-
-        viewModel.data.observe(this){
-            val adapter = TodoAdapter(it, repository,viewModel)
+        viewModel.data.observe(this) { todoList ->
+            adapter = TodoAdapter(todoList, repository, viewModel)
             rvTodoList.adapter = adapter
             rvTodoList.layoutManager = LinearLayoutManager(this)
         }
 
         CoroutineScope(Dispatchers.IO).launch {
             val data = repository.getAllTodoItems()
-
             runOnUiThread {
                 viewModel.setData(data)
             }
         }
 
-        val btnAddItem:Button = findViewById(R.id.btnAddItem)
+        val searchView: SearchView = findViewById(R.id.searchView)
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                query?.let {
+                    adapter.filter(it)
+                }
+                return false
+            }
 
+            override fun onQueryTextChange(newText: String?): Boolean {
+                newText?.let {
+                    adapter.filter(it)
+                }
+                return true
+            }
+        })
+
+        val btnAddItem: Button = findViewById(R.id.btnAddItem)
         btnAddItem.setOnClickListener {
-            displayDialog(repository,viewModel)
+            displayDialog(repository, viewModel)
         }
 
         val btnTimer: Button = findViewById(R.id.btnTimer)
@@ -64,50 +72,32 @@ class MainActivity : AppCompatActivity() {
 
         val btnNotify: Button = findViewById(R.id.btnNotify)
         btnNotify.setOnClickListener {
-            val intent = Intent(this,NotificationsActivity::class.java)
+            val intent = Intent(this, NotificationsActivity::class.java)
             startActivity(intent)
         }
-
-
-
-
-//        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-//            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-//            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-//            insets
-//        }
-
-
-
     }
 
-    fun displayDialog(repository: TodoRepository, viewModel: MainActivityData){
+    private fun displayDialog(repository: TodoRepository, viewModel: MainActivityData) {
         val builder = AlertDialog.Builder(this)
-
         builder.setTitle("Add Item")
         builder.setMessage("Insert the todo")
 
         val input = EditText(this)
-        input.inputType = InputType.TYPE_CLASS_TEXT
+        input.inputType = android.text.InputType.TYPE_CLASS_TEXT
         builder.setView(input)
 
-        builder.setPositiveButton("OK"){dialog,which ->
+        builder.setPositiveButton("OK") { _, _ ->
             val item = input.text.toString()
             CoroutineScope(Dispatchers.IO).launch {
                 repository.insert(Todo(item))
                 val data = repository.getAllTodoItems()
-
                 runOnUiThread {
                     viewModel.setData(data)
-
                 }
             }
         }
 
-        builder.setNegativeButton("Cancel"){dialog,which ->
-            dialog.cancel()
-        }
-        val alertDialog = builder.create()
-        alertDialog.show()
+        builder.setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
+        builder.show()
     }
 }

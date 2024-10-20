@@ -14,39 +14,34 @@ import com.example.test_project.database.repositories.TodoRepository
 import com.example.test_project.viewHolders.ToDoViewHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class TodoAdapter(items:List<Todo>,
-                  repository: TodoRepository,
-                  viewModel: MainActivityData):RecyclerView.Adapter<ToDoViewHolder>() {
+class TodoAdapter(
+    items: List<Todo>,
+    private val repository: TodoRepository,
+    private val viewModel: MainActivityData
+) : RecyclerView.Adapter<ToDoViewHolder>() {
 
-                      var context: Context? = null
+    private var context: Context? = null
+    private var items: List<Todo> = items
+    private var itemsFull: List<Todo> = ArrayList(items) // Create a copy of the full list
 
-    val items = items
-    val repository = repository
-    val viewModel = viewModel
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ToDoViewHolder {
         context = parent.context
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.view_item,parent,false)
-
+            .inflate(R.layout.view_item, parent, false)
         return ToDoViewHolder(view)
-
     }
 
     override fun getItemCount(): Int {
-
         return items.size
-
     }
 
     override fun onBindViewHolder(holder: ToDoViewHolder, position: Int) {
-
         val todoItem = items[position]
 
-        holder.cbTodo.text = items.get(position).item
+        holder.cbTodo.text = todoItem.item
 
         holder.ivEdit.setOnClickListener {
             showEditDialog(todoItem)
@@ -55,29 +50,23 @@ class TodoAdapter(items:List<Todo>,
         holder.ivDelete.setOnClickListener {
             val isChecked = holder.cbTodo.isChecked
 
-            if (isChecked)
-            {
+            if (isChecked) {
                 CoroutineScope(Dispatchers.IO).launch {
-                    repository.delete(items.get(position))
+                    repository.delete(todoItem)
 
                     val data = repository.getAllTodoItems()
-                    withContext(Dispatchers.Main){
+                    withContext(Dispatchers.Main) {
                         viewModel.setData(data)
+                    }
                 }
-
-                }
-                Toast.makeText(context,"Item deleted",Toast.LENGTH_LONG).show()
-            }else{
-                Toast.makeText(context,"Select the item to delete",Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Item deleted", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(context, "Select the item to delete", Toast.LENGTH_LONG).show()
             }
         }
-
-        
-
     }
 
     private fun showEditDialog(todoItem: Todo) {
-
         val builder = AlertDialog.Builder(context!!)
         builder.setTitle("Edit Todo Item")
 
@@ -97,6 +86,18 @@ class TodoAdapter(items:List<Todo>,
         }
         builder.setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
         builder.show()
-
     }
+
+    // Method to filter the list based on search query
+    fun filter(query: String) {
+        items = if (query.isEmpty()) {
+            itemsFull
+        } else {
+            itemsFull.filter {
+                it.item?.contains(query, ignoreCase = true) == true
+            }
+        }
+        notifyDataSetChanged()
+    }
+
 }
